@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../ctx';
-import { LANG_NAMES, RULES, type Lang } from '../i18n';
+import { htmlLang, isRtl, LANG_NAMES, RULES, type Lang } from '../i18n';
 import { CardFace } from './Card';
 
 type Tab = 'hands' | 'howto' | 'betting' | 'terms';
@@ -25,7 +25,7 @@ export function RulesDrawer({ open, setOpen }: { open: boolean; setOpen: (v: boo
         <span>♥</span>
       </button>
       <div className={`rules-wrap ${open ? 'open' : ''}`} onClick={() => setOpen(false)}>
-        <aside className="rules" dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang} onClick={(e) => e.stopPropagation()}>
+        <aside className="rules" dir={isRtl(lang) ? 'rtl' : 'ltr'} lang={htmlLang(lang)} onClick={(e) => e.stopPropagation()}>
           <header className="rules-head">
             <h2>{R.title}</h2>
             <button className="icon-btn" onClick={() => setOpen(false)} aria-label="Close">

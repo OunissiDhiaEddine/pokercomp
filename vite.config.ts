@@ -40,8 +40,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'ChipStack — Poker Chips',
-        short_name: 'ChipStack',
+        name: 'PokerComp — Poker Chips',
+        short_name: 'PokerComp',
         description: "Virtual Texas Hold'em chips for your real card game. No sign-up, just a game code.",
         theme_color: '#0b1f17',
         background_color: '#07140f',

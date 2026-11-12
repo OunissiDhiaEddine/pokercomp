@@ -4,7 +4,7 @@ import { Game } from './components/Game';
 import { Home } from './components/Home';
 import { RulesDrawer } from './components/Rules';
 import { Ctx, errText, type Prefs } from './ctx';
-import { DICTS, type Lang } from './i18n';
+import { DICTS, htmlLang, isRtl, type Lang } from './i18n';
 import { joinGame, type ApiError } from './lib/api';
 import { setSoundEnabled } from './lib/fx';
 import { getCreds, load, save } from './lib/storage';
@@ -13,7 +13,9 @@ import { useWakeLock } from './lib/wakelock';
 const PREFS = 'chipstack:prefs';
 
 function detectLang(): Lang {
-  const l = (navigator.language || 'en').slice(0, 2);
+  const full = navigator.language || 'en';
+  if (/^ar-DZ/i.test(full)) return 'dz';
+  const l = full.slice(0, 2);
   return l === 'fr' || l === 'ar' ? l : 'en';
 }
 
@@ -49,10 +51,10 @@ export function App() {
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 2800);
   }, []);
 
-  const t = DICTS[prefs.lang];
+  const t = DICTS[prefs.lang] ?? DICTS.en;
   useEffect(() => {
-    document.documentElement.lang = prefs.lang;
-    document.documentElement.dir = prefs.lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = htmlLang(prefs.lang);
+    document.documentElement.dir = isRtl(prefs.lang) ? 'rtl' : 'ltr';
   }, [prefs.lang]);
   useEffect(() => setSoundEnabled(prefs.sound), [prefs.sound]);
   useWakeLock(prefs.wake && !!active);

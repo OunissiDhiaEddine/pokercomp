@@ -1,8 +1,8 @@
-# ChipStack ♠ — virtual poker chips
+# PokerComp ♠ — virtual poker chips
 
 **▶ Play: [pokercomp.vercel.app](https://pokercomp.vercel.app)**
 
-You bring a real deck of cards and ChipStack handles the chips. It's a PWA for in-person
+You bring a real deck of cards and PokerComp handles the chips. It's a PWA for in-person
 **Texas Hold'em**. Anyone can open it on their phone. There are no accounts: one person creates a
 table and the others join with a 5-letter code, a link or a QR code.
 

@@ -13,7 +13,9 @@ export interface Store {
   cas(code: string, expected: number, state: string, prev: string | null, undo?: boolean): Promise<number>;
 }
 
-const k = (code: string) => ({ s: `room:${code}:s`, v: `room:${code}:v`, h: `room:${code}:h` });
+/** Every key is namespaced so the database can be shared with other projects safely. */
+const PREFIX = 'pokercomp:room:';
+const k = (code: string) => ({ s: `${PREFIX}${code}:s`, v: `${PREFIX}${code}:v`, h: `${PREFIX}${code}:h` });
 
 const CAS_LUA = `
 local v = redis.call('GET', KEYS[2]) or '0'

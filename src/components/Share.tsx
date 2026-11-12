@@ -26,7 +26,7 @@ export function ShareSheet({ open, onClose, code }: { open: boolean; onClose: ()
   };
   const share = async () => {
     try {
-      await navigator.share({ title: 'ChipStack', text: `${t.shareText} ${code}`, url });
+      await navigator.share({ title: 'PokerComp', text: `${t.shareText} ${code}`, url });
     } catch {
       /* cancelled */
     }

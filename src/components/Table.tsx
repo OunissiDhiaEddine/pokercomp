@@ -119,7 +119,7 @@ export function Table({
     <div className="table-area">
       <div className="table-felt">
         <div className="felt-inner" />
-        <div className="felt-logo">ChipStack</div>
+        <div className="felt-logo">PokerComp</div>
       </div>
       <div className="table-center">
         <div className="street-pill">

@@ -1604,6 +1604,11 @@ b,
   margin: 0;
   font-size: 1.3rem;
 }
+.rules .seg.langs button,
+.menu .seg button {
+  font-size: 0.8rem;
+  padding: 8px 2px;
+}
 .rules .seg.tabs button {
   font-size: 0.82rem;
   padding: 8px 4px;

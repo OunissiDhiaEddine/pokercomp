@@ -58,7 +58,7 @@ export function Home({ initialCode, onEnter }: { initialCode?: string; onEnter: 
           ))}
         </div>
         <h1 className="logo">
-          Chip<span>Stack</span>
+          Poker<span>Comp</span>
         </h1>
         <p className="tagline">{t.tagline}</p>
         <p className="sub">{t.sub}</p>
