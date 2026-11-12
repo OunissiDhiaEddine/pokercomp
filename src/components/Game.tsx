@@ -2,8 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { handInProgress } from '../../shared/engine';
 import type { Intent, Player, PublicRoom } from '../../shared/types';
 import { errText, useApp } from '../ctx';
-import { fmt, LANG_NAMES, type Lang } from '../i18n';
-import { ApiError, leaveGame, useRoom } from '../lib/api';
+import { fmt, htmlLang, LANG_NAMES, type Lang } from '../i18n';
+
+const htmlLocale = (l: Lang) => (l === 'en' ? 'en-GB' : htmlLang(l));
+import { ApiError, closeGame, leaveGame, useRoom } from '../lib/api';
+import { ROOM_LIFETIME_MS } from '../../shared/engine';
 import { fmtChips } from '../lib/chips';
 import { chime, flyChips, haptic, swoosh } from '../lib/fx';
 import type { Creds } from '../lib/storage';
@@ -49,7 +52,7 @@ export function Game({
   );
 
   useEffect(() => {
-    if (error === 'room_not_found') {
+    if (error === 'room_not_found' || error === 'room_closed') {
       toast(errText(t, error), 'error');
       onExit();
     }
@@ -272,6 +275,9 @@ export function Game({
               ))}
             </ul>
           </div>
+          <p className="hint closes-at">
+            ⏳ {fmt(t.closesAt, { time: new Date(room.createdAt + ROOM_LIFETIME_MS).toLocaleTimeString(htmlLocale(prefs.lang), { weekday: 'short', hour: '2-digit', minute: '2-digit' }) })}
+          </p>
           <button className="btn" onClick={onExit}>
             ⌂ {t.back}
           </button>
@@ -288,6 +294,23 @@ export function Game({
           >
             {t.leave}
           </button>
+          {isHost && (
+            <button
+              className="btn danger solid"
+              onClick={async () => {
+                if (!confirm(t.closeTableConfirm)) return;
+                try {
+                  await closeGame(room.code, creds);
+                  toast(t.tableClosed, 'info');
+                  onExit();
+                } catch (e) {
+                  toast(errText(t, (e as ApiError).code), 'error');
+                }
+              }}
+            >
+              🗑 {t.closeTable}
+            </button>
+          )}
         </div>
       </Sheet>
     </div>

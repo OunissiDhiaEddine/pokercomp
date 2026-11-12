@@ -42,4 +42,10 @@ npm run build
 If no Redis is connected, the API falls back to an in-memory store and the app shows a warning
 banner. Games are not shared reliably between serverless instances in that mode.
 
-Rooms expire after 24 hours of inactivity.
+Cleanup:
+- Every table is **deleted automatically 24 hours after it was created**, even if it is still in use.
+  All of its Redis keys are set to expire at that time, so nothing is left behind.
+- The host can **close & delete** the table at any time from the ☰ menu. Other players are sent back
+  to the home screen with a "the host closed this table" message.
+- When the last player leaves, the table is deleted immediately.
+- All keys use the `pokercomp:` prefix, so the Redis database can be shared with other projects.

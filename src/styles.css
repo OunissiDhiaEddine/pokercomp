@@ -134,6 +134,15 @@ b,
   border-color: rgba(239, 68, 68, 0.4);
   background: rgba(239, 68, 68, 0.1);
 }
+.btn.danger.solid {
+  background: linear-gradient(180deg, #dc2626, #991b1b);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.closes-at {
+  margin: 0;
+  text-align: center;
+}
 .btn.ghost {
   background: none;
   border-color: transparent;

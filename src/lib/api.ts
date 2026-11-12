@@ -32,13 +32,24 @@ export async function createGame(name: string, settings: Settings) {
   return r;
 }
 
+const GONE = new Set(['room_not_found', 'room_closed']);
+
 export async function joinGame(code: string, name: string, creds?: Creds | null) {
   const r = await call<JoinRes>({
     method: 'POST',
     body: JSON.stringify({ op: 'join', code, name, pid: creds?.pid, token: creds?.token }),
+  }).catch((e: ApiError) => {
+    if (GONE.has(e.code)) setCreds(code, null);
+    throw e;
   });
   setCreds(r.room.code, r.me);
   return r;
+}
+
+/** Host only: deletes the table for everyone. */
+export async function closeGame(code: string, creds: Creds) {
+  await call({ method: 'POST', body: JSON.stringify({ op: 'close', code, ...creds }) });
+  setCreds(code, null);
 }
 
 export async function leaveGame(code: string, creds: Creds) {
@@ -75,7 +86,8 @@ export function useRoom(code: string, creds: Creds, initial: PublicRoom | null) 
           setOffline(false);
         } catch (e) {
           const c = (e as ApiError).code;
-          if (c === 'room_not_found') {
+          if (GONE.has(c)) {
+            setCreds(code, null);
             setError(c);
             return;
           }

@@ -22,6 +22,8 @@ const fail = (code: string): never => {
 };
 
 export const MAX_PLAYERS = 10;
+/** Tables are closed and deleted this long after they were created. */
+export const ROOM_LIFETIME_MS = 24 * 60 * 60 * 1000;
 export const STREETS: Street[] = ['preflop', 'flop', 'turn', 'river'];
 const BOARD_COUNT: Record<Street, number> = {
   lobby: 0,

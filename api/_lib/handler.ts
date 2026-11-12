@@ -1,6 +1,6 @@
 import { addPlayer, applyIntent, cleanName, createRoom, GameError, toPublic } from '../../shared/engine.js';
 import type { Intent, StoredRoom } from '../../shared/types.js';
-import { getStore } from './store.js';
+import { expiryOf, getStore } from './store.js';
 
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const CODE_RE = /^[A-Z0-9]{4,6}$/;
@@ -28,7 +28,7 @@ function normCode(c: unknown) {
 
 async function load(code: string) {
   const got = await getStore().get(code);
-  if (!got) throw new GameError('room_not_found');
+  if (!got) throw new GameError((await getStore().wasClosed(code)) ? 'room_closed' : 'room_not_found');
   return { room: JSON.parse(got.state) as StoredRoom, version: got.version, history: got.history };
 }
 
@@ -44,7 +44,7 @@ async function mutate(
     const res = fn(room);
     room.updatedAt = Date.now();
     const undoable = !!res && res.undoable;
-    const nv = await store.cas(code, version, JSON.stringify(room), undoable ? before : null);
+    const nv = await store.cas(code, version, JSON.stringify(room), undoable ? before : null, expiryOf(room.createdAt));
     if (nv > 0) return { room, version: nv, history: history + (undoable ? 1 : 0) };
     await new Promise((r) => setTimeout(r, 20 + Math.random() * 60 * (attempt + 1)));
   }
@@ -77,7 +77,7 @@ async function undo(code: string) {
     prev.eventSeq = cur.eventSeq + 1;
     prev.events = [];
     prev.updatedAt = Date.now();
-    const nv = await store.cas(code, version, JSON.stringify(prev), null, true);
+    const nv = await store.cas(code, version, JSON.stringify(prev), null, expiryOf(cur.createdAt), true);
     if (nv > 0) return { room: prev, version: nv, history: history - 1 };
   }
   throw new GameError('busy');
@@ -102,7 +102,7 @@ export async function handle(req: Request): Promise<Response> {
       const store = getStore();
       if (known > 0) {
         const v = await store.version(code);
-        if (v === 0) return err('room_not_found', 404);
+        if (v === 0) return (await store.wasClosed(code)) ? err('room_closed', 410) : err('room_not_found', 404);
         if (v === known) return json({ same: true, version: v });
       }
       const r = await load(code);
@@ -122,7 +122,7 @@ export async function handle(req: Request): Promise<Response> {
         for (let i = 0; i < 6; i++) {
           const code = rand(5);
           const room = createRoom(code, pid, name, token, body.settings ?? {});
-          const v = await store.cas(code, 0, JSON.stringify(room), null);
+          const v = await store.cas(code, 0, JSON.stringify(room), null, expiryOf(room.createdAt));
           if (v > 0) return json({ room: toPublic(room, v), me: { pid, token }, store: store.kind });
         }
         throw new GameError('busy');
@@ -160,9 +160,17 @@ export async function handle(req: Request): Promise<Response> {
         });
         return json({ room: pub(r, pid) });
       }
+      case 'close': {
+        const code = normCode(body.code);
+        const { room } = await load(code);
+        const pid = auth(room, body.pid, body.token);
+        if (room.hostId !== pid) throw new GameError('host_only');
+        await store.close(code);
+        return json({ ok: true });
+      }
       case 'leave': {
         const code = normCode(body.code);
-        await mutate(code, (room) => {
+        const left = await mutate(code, (room) => {
           const pid = auth(room, body.pid, body.token);
           const p = room.players.find((x) => x.id === pid)!;
           if (room.street !== 'lobby' && room.street !== 'complete' && p.inHand)
@@ -172,13 +180,16 @@ export async function handle(req: Request): Promise<Response> {
           if (room.hostId === pid && room.players[0]) room.hostId = room.players[0].id;
           if (room.dealerId === pid) room.dealerId = null;
         });
+        // Last one out: delete the table right away
+        if (left.room.players.length === 0) await store.close(code);
         return json({ ok: true });
       }
       default:
         return err('bad_request');
     }
   } catch (e) {
-    if (e instanceof GameError) return err(e.code, e.code === 'room_not_found' ? 404 : 400);
+    if (e instanceof GameError)
+      return err(e.code, e.code === 'room_not_found' ? 404 : e.code === 'room_closed' ? 410 : 400);
     console.error(e);
     return err('server_error', 500);
   }
