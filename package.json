@@ -1,0 +1,41 @@
+{
+  "name": "pokercomp",
+  "version": "1.0.0",
+  "description": "Virtual poker chips PWA for in-person Texas Hold'em",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p . && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OunissiDhiaEddine/pokercomp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OunissiDhiaEddine/pokercomp/issues"
+  },
+  "homepage": "https://github.com/OunissiDhiaEddine/pokercomp#readme",
+  "dependencies": {
+    "@upstash/redis": "^1.41.0",
+    "qrcode-generator": "^2.0.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.6",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^3.2.7"
+  },
+  "type": "module",
+  "private": true
+}
